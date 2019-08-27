@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 
 import com.dev.app.ws.dto.UserDTO;
 import com.dev.app.ws.entity.UserEntity;
+import com.dev.app.ws.enums.ErrorMessages;
+import com.dev.app.ws.exceptions.UserServiceException;
 import com.dev.app.ws.repository.UserRepository;
 import com.dev.app.ws.service.UserService;
 import com.dev.app.ws.util.Utils;
@@ -58,6 +60,48 @@ public class UserServiceImpl implements UserService {
 		UserDTO returnValue = new UserDTO();
 		BeanUtils.copyProperties(userEntity, returnValue);
 		return returnValue;
+	}
+	
+	@Override
+	public UserDTO getUserByUserId(String userId) {
+		
+		UserDTO returnValue = new UserDTO();
+		
+		UserEntity userEntity = userRepository.findByUserId(userId);
+		
+		if(userEntity == null) throw new UsernameNotFoundException("User with ID: " + userId + " not found");
+		
+		BeanUtils.copyProperties(userEntity, returnValue);
+		return returnValue;
+	}
+	
+	@Override
+	public UserDTO updateUser(String userId, UserDTO userDTO) {
+		
+		UserDTO returnValue = new UserDTO();
+		
+		UserEntity userEntity = userRepository.findByUserId(userId);
+		
+		if(userEntity == null)
+			throw new UserServiceException(ErrorMessages.NO_RECORD_FOUND.getErrorMessage());
+		
+		userEntity.setFirstName(userDTO.getFirstName());
+		userEntity.setLastName(userDTO.getLastName());
+		
+		UserEntity updatedUserEntity = userRepository.save(userEntity);
+		BeanUtils.copyProperties(updatedUserEntity, returnValue);
+		return returnValue;
+	}
+
+	@Override
+	public void deleteUser(String userId) {
+		
+		UserEntity userEntity = userRepository.findByUserId(userId);
+		
+		if(userEntity == null)
+			throw new UserServiceException(ErrorMessages.NO_RECORD_FOUND.getErrorMessage());
+		
+		userRepository.delete(userEntity);
 	}
 
 	@Override
