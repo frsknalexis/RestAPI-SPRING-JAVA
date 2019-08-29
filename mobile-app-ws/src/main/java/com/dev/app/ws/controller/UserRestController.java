@@ -5,6 +5,7 @@ import java.util.List;
 
 import javax.validation.Valid;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -54,8 +55,11 @@ public class UserRestController {
 		
 		if(request.getFirstName().isEmpty()) throw new NullPointerException("The object is null");
 		
-		UserDTO userDto = new UserDTO();
-		BeanUtils.copyProperties(request, userDto);
+		//UserDTO userDto = new UserDTO();
+		//BeanUtils.copyProperties(request, userDto);
+		
+		ModelMapper modelMapper = new ModelMapper();
+		UserDTO userDto = modelMapper.map(request, UserDTO.class);
 		
 		UserDTO createdUser = userService.createUser(userDto);
 		BeanUtils.copyProperties(createdUser, userDetails);
@@ -94,7 +98,7 @@ public class UserRestController {
 	
 	@GetMapping(value = "/users",
 			produces = { MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE })
-	public List<UserResponse> getUsers(@RequestParam(value = "page", defaultValue = "1") int page,
+	public List<UserResponse> getUsers(@RequestParam(value = "page", defaultValue = "0") int page,
 			@RequestParam(value = "limit", defaultValue = "25") int limit) {
 		
 		List<UserResponse> returnValue = new ArrayList<>();
